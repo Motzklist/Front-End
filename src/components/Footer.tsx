@@ -11,14 +11,15 @@ export default function Footer() {
             </p>
           </div>
           <div className="flex space-x-6">
+            {/* TODO: Replace with actual routes when pages are implemented */}
             <a 
-              href="#" 
+              href="/privacy" 
               className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors text-sm"
             >
               Privacy Policy
             </a>
             <a 
-              href="#" 
+              href="/terms" 
               className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors text-sm"
             >
               Terms of Service
