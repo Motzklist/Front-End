@@ -92,7 +92,7 @@ export default function Home() {
     }
   };
 
-  const handleToggleItem = (id: number) => {
+    const handleToggleEquipment = (id: number) => {
     setSelectedEquipment(prev => {
       const newSet = new Set(prev);
       if (newSet.has(id)) {
@@ -163,7 +163,7 @@ export default function Home() {
               data={equipmentData}
               selectedIds={selectedEquipment}
               quantities={quantities}
-              onToggle={handleToggleItem}
+              onToggle={handleToggleEquipment}
               onQuantityChange={handleQuantityChange}
             />
           )}
