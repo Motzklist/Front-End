@@ -7,8 +7,9 @@ Helper scripts to bootstrap the Next.js frontend. They handle dependency install
 Before running the scripts, ensure you have:
 
 * **Node.js:** [Download here](https://nodejs.org/) (LTS recommended).
-* **Package Manager:** `npm` (included with Node), ~~`yarn`, or `pnpm`~~.
+* **Package Manager:** `npm` (included with Node), `yarn`, or `pnpm`.
 
+> **Note:** The setup scripts support `npm`, `yarn`, and `pnpm`. If you encounter issues with `yarn` or `pnpm`, please use `npm` as a fallback.
 ## Quick Start
 
 **Windows**
