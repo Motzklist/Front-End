@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import SearchableSelect, { SelectItem } from '@/components/SearchableSelect';
+import EquipmentList, { EquipmentData } from '@/components/EquipmentList';
 
 export default function Home() {
   const [schools] = useState<SelectItem[]>([
@@ -11,8 +12,23 @@ export default function Home() {
   ]);
   const [grades, setGrades] = useState<SelectItem[]>([]);
   const [classes, setClasses] = useState<SelectItem[]>([]);
-  const [equipmentData, setEquipmentData] = useState<any>(null);
+  const [equipmentData, setEquipmentData] = useState<EquipmentData | null>(null);
+  const [selectedEquipment, setSelectedEquipment] = useState<Set<number>>(new Set());
+  const [quantities, setQuantities] = useState<Map<number, number>>(new Map());
   const [isLoading, setIsLoading] = useState(false);
+
+  // Initialize all items as selected when equipment data loads
+  useEffect(() => {
+    if (equipmentData) {
+      const allIds = new Set(equipmentData.items.map(item => item.id));
+      setSelectedEquipment(allIds);
+
+      const initialQuantities = new Map(
+        equipmentData.items.map(item => [item.id, item.quantity])
+      );
+      setQuantities(initialQuantities);
+    }
+  }, [equipmentData]);
 
   const handleSchoolSelect = async (item: SelectItem) => {
     console.log('Selected School:', item.name);
@@ -65,6 +81,26 @@ export default function Home() {
     }
   };
 
+  const handleToggleItem = (id: number) => {
+    setSelectedEquipment(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const handleQuantityChange = (id: number, quantity: number) => {
+    setQuantities(prev => {
+      const newMap = new Map(prev);
+      newMap.set(id, quantity);
+      return newMap;
+    });
+  };
+
   return (
     <Layout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -77,7 +113,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="max-w-md mx-auto">
+        <div className="max-w-3xl mx-auto">
           <SearchableSelect
             label="School"
             items={schools}
@@ -107,19 +143,13 @@ export default function Home() {
           )}
 
           {equipmentData && (
-            <div className="p-6 mt-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-sm">
-              <h3 className="font-bold text-zinc-900 dark:text-white mb-3">
-                Equipment List Ready
-              </h3>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
-                Equipment data loaded - presentation component goes here
-              </p>
-              <div className="p-3 bg-zinc-50 dark:bg-zinc-950 rounded border border-zinc-200 dark:border-zinc-800">
-                <pre className="text-xs text-zinc-700 dark:text-zinc-300 overflow-auto">
-                  {JSON.stringify(equipmentData, null, 2)}
-                </pre>
-              </div>
-            </div>
+            <EquipmentList
+              data={equipmentData}
+              selectedIds={selectedEquipment}
+              quantities={quantities}
+              onToggle={handleToggleItem}
+              onQuantityChange={handleQuantityChange}
+            />
           )}
         </div>
       </div>
