@@ -20,13 +20,24 @@ export default function Home() {
     const [selectedEquipment, setSelectedEquipment] = useState<Set<number>>(new Set());
     const [quantities, setQuantities] = useState<Map<number, number>>(new Map());
     const [isLoading, setIsLoading] = useState(false);
+    const [redirecting, setRedirecting] = useState(false);
 
     // Check authentication and redirect if not authenticated
     useEffect(() => {
-        if (!isAuthenticated) {
-            router.push('/login');
+        let isMounted = true;
+        if (!isAuthenticated && !redirecting) {
+            setRedirecting(true);
+            // Await router.push and cleanup if unmounted
+            Promise.resolve(router.push('/login')).finally(() => {
+                if (!isMounted) {
+                    setRedirecting(false);
+                }
+            });
         }
-    }, [isAuthenticated, router]);
+        return () => {
+            isMounted = false;
+        };
+    }, [isAuthenticated, redirecting, router]);
 
     // Initialize all items as selected when equipment data loads
     useEffect(() => {
