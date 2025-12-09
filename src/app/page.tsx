@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import {useState, useEffect, useCallback} from 'react';
+import {useRouter} from 'next/navigation';
 import Layout from '@/components/Layout';
-import SearchableSelect, { SelectItem } from '@/components/SearchableSelect';
-import EquipmentList, { EquipmentData } from '@/components/EquipmentList';
-
+import SearchableSelect, {SelectItem} from '@/components/SearchableSelect';
+import EquipmentList, {EquipmentData} from '@/components/EquipmentList';
+import {useAuth} from '@/contexts/AuthContext';
+        
 // Define the API URL using the environment variable injected by Docker Compose.
 // CRITICAL: Next.js must be told which URL to use for the API Gateway service.
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
@@ -17,22 +19,42 @@ interface SelectionState {
 }
 
 export default function Home() {
+    const router = useRouter();
+    const {isAuthenticated} = useAuth();
+    
     // State to track the currently selected items
     const [selection, setSelection] = useState<SelectionState>({
         school: null,
         grade: null,
         class: null,
     });
-
-    // Data states (Schools are no longer hardcoded)
+    
     const [schools, setSchools] = useState<SelectItem[]>([]);
     const [grades, setGrades] = useState<SelectItem[]>([]);
     const [classes, setClasses] = useState<SelectItem[]>([]);
     const [equipmentData, setEquipmentData] = useState<EquipmentData | null>(null);
-
+    
     const [selectedEquipment, setSelectedEquipment] = useState<Set<number>>(new Set());
     const [quantities, setQuantities] = useState<Map<number, number>>(new Map());
     const [isLoading, setIsLoading] = useState(false);
+    const [redirecting, setRedirecting] = useState(false);
+
+    // Check authentication and redirect if not authenticated
+    useEffect(() => {
+        let isMounted = true;
+        if (!isAuthenticated && !redirecting) {
+            setRedirecting(true);
+            // Await router.push and cleanup if unmounted
+            Promise.resolve(router.push('/login')).finally(() => {
+                if (!isMounted) {
+                    setRedirecting(false);
+                }
+            });
+        }
+        return () => {
+            isMounted = false;
+        };
+    }, [isAuthenticated, redirecting, router]);
 
     // --- Utility Fetch Function ---
     // Memoize the function for use in useEffect dependencies
@@ -63,25 +85,23 @@ export default function Home() {
         // We pass 'false' for resetSelections since we are setting the initial data for schools
         fetchData('/api/schools', setSchools, false);
     }, [fetchData]);
-
+    
     // Initialize all items as selected when equipment data loads
     useEffect(() => {
         if (equipmentData) {
-            // NOTE: Your backend uses string IDs for equipment, but the frontend state uses number.
-            // Assuming EquipmentData.items contains objects with 'id' as a string or can be converted.
-            const allIds = new Set(equipmentData.items.map(item => parseInt(item.id as any)));
+            const allIds = new Set(equipmentData.items.map(item => parseInt(item.id as any))); // TODO: Settle if using numberor string
             setSelectedEquipment(allIds);
 
             const initialQuantities = new Map(
                 equipmentData.items.map(item => [parseInt(item.id as any), item.quantity])
-            );
+            ); // TODO: Settle if using numberor string
             setQuantities(initialQuantities);
         }
     }, [equipmentData]);
-
-
+    
+    
     // --- Event Handlers (Trigger Fetching) ---
-
+    
     const handleSchoolSelect = useCallback((item: SelectItem) => {
         console.log('Selected School:', item.name);
         // 1. Reset lower selections
@@ -94,7 +114,6 @@ export default function Home() {
         fetchData(`/api/grades?school_id=${item.id}`, setGrades);
 
     }, [fetchData]);
-
 
     const handleGradeSelect = useCallback((item: SelectItem) => {
         console.log('Selected Grade:', item.name);
@@ -109,7 +128,6 @@ export default function Home() {
 
     }, [fetchData, selection.school]);
 
-
     const handleClassSelect = useCallback((item: SelectItem) => {
         console.log('Selected Class:', item.name);
         // 1. Retain school and grade, set class
@@ -122,9 +140,7 @@ export default function Home() {
 
     }, [fetchData, selection.school, selection.grade]);
 
-
-    // Handlers for Equipment List component (Remain unchanged)
-    const handleToggleItem = (id: number) => {
+    const handleToggleEquipment = (id: number) => {
         setSelectedEquipment(prev => {
             const newSet = new Set(prev);
             if (newSet.has(id)) {
@@ -143,6 +159,11 @@ export default function Home() {
             return newMap;
         });
     };
+
+    // Don't render content if not authenticated
+    if (!isAuthenticated) {
+        return null;
+    }
 
     return (
         <Layout>
@@ -166,23 +187,27 @@ export default function Home() {
                         disabled={isLoading && schools.length === 0}
                     />
 
-                    {/* Grade Selector - Enabled after School is selected */}
-                    <SearchableSelect
-                        label="Grade"
-                        items={grades}
-                        placeholder={selection.school ? "Search Grade" : "Select School First"}
-                        onSelect={handleGradeSelect}
-                        disabled={!selection.school || isLoading}
-                    />
+                    {grades.length > 0 && (
+                        {/* Grade Selector - Enabled after School is selected */}
+                        <SearchableSelect
+                            label="Grade"
+                            items={grades}
+                            placeholder={selection.school ? "Search Grade" : "Select School First"}
+                            onSelect={handleGradeSelect}
+                            disabled={!selection.school || isLoading}
+                        />
+                    )}
 
-                    {/* Class Selector - Enabled after Grade is selected */}
-                    <SearchableSelect
-                        label="Class"
-                        items={classes}
-                        placeholder={selection.grade ? "Search Class" : "Select Grade First"}
-                        onSelect={handleClassSelect}
-                        disabled={!selection.grade || isLoading}
-                    />
+                    {classes.length > 0 && (
+                        {/* Class Selector - Enabled after Grade is selected */}
+                        <SearchableSelect
+                            label="Class"
+                            items={classes}
+                            placeholder={selection.grade ? "Search Class" : "Select Grade First"}
+                            onSelect={handleClassSelect}
+                            disabled={!selection.grade || isLoading}
+                        />
+                    )}
 
                     {isLoading && (
                         <div className="text-center py-4">
@@ -195,7 +220,7 @@ export default function Home() {
                             data={equipmentData}
                             selectedIds={selectedEquipment}
                             quantities={quantities}
-                            onToggle={handleToggleItem}
+                            onToggle={handleToggleEquipment}
                             onQuantityChange={handleQuantityChange}
                         />
                     )}

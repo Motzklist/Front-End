@@ -13,15 +13,38 @@ A modern Next.js website with a basic layout structure including header, main co
 
 ## Getting Started
 
-First, install the dependencies:
+### Quick Setup (Recommended)
+
+Use the automated setup scripts to check dependencies, install packages, and start the server:
+
+**Windows:**
+```cmd
+cd scripts
+setup.bat
+```
+
+**Linux/macOS:**
+```bash
+cd scripts
+chmod +x setup.sh  # First time only
+./setup.sh
+```
+
+The setup scripts will:
+- Check for Node.js and internet connectivity
+- Detect or let you choose a package manager (npm/yarn/pnpm)
+- Install dependencies if needed
+- Verify port availability
+- Start the development server
+
+For more details, see [scripts/README.md](scripts/README.md)
+
+### Manual Setup
+
+If you prefer manual setup:
 
 ```bash
 npm install
-```
-
-Then, run the development server:
-
-```bash
 npm run dev
 ```
 
