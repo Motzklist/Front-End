@@ -11,17 +11,15 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({children}: { children: ReactNode }) {
-    const [isAuthenticated, setIsAuthenticated] = useState(() => {
-        // Check sessionStorage on initialization (only runs once on mount)
-        if (typeof window !== 'undefined') {
-            return sessionStorage.getItem('isAuthenticated') === 'true';
-        }
-        return false;
-    });
+    // Always start with false to match SSR, then update after hydration
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // Mark as loaded after hydration
+        // Check sessionStorage only after hydration to avoid SSR mismatch
+        const storedAuth = sessionStorage.getItem('isAuthenticated') === 'true';
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setIsAuthenticated(storedAuth);
         setIsLoading(false);
     }, []);
 

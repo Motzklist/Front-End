@@ -37,24 +37,13 @@ export default function Home() {
     const [selectedEquipment, setSelectedEquipment] = useState<Set<number>>(new Set());
     const [quantities, setQuantities] = useState<Map<number, number>>(new Map());
     const [isLoading, setIsLoading] = useState(false);
-    const [redirecting, setRedirecting] = useState(false);
 
     // Check authentication and redirect if not authenticated
     useEffect(() => {
-        let isMounted = true;
-        if (!isAuthenticated && !redirecting) {
-            setRedirecting(true);
-            // Await router.push and cleanup if unmounted
-            Promise.resolve(router.push('/login')).finally(() => {
-                if (!isMounted) {
-                    setRedirecting(false);
-                }
-            });
+        if (!isAuthenticated) {
+            router.push('/login');
         }
-        return () => {
-            isMounted = false;
-        };
-    }, [isAuthenticated, redirecting, router]);
+    }, [isAuthenticated, router]);
 
     // --- Utility Fetch Function ---
     // Memoize the function for use in useEffect dependencies
@@ -187,8 +176,8 @@ export default function Home() {
                         disabled={isLoading && schools.length === 0}
                     />
 
+                    {/* Grade Selector - Enabled after School is selected */}
                     {grades.length > 0 && (
-                        {/* Grade Selector - Enabled after School is selected */}
                         <SearchableSelect
                             label="Grade"
                             items={grades}
@@ -198,8 +187,8 @@ export default function Home() {
                         />
                     )}
 
+                    {/* Class Selector - Enabled after Grade is selected */}
                     {classes.length > 0 && (
-                        {/* Class Selector - Enabled after Grade is selected */}
                         <SearchableSelect
                             label="Class"
                             items={classes}
