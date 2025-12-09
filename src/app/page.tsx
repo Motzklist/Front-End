@@ -18,6 +18,13 @@ interface SelectionState {
     class: SelectItem | null;
 }
 
+// Define the equipment item structure from Go backend
+interface EquipmentItemResponse {
+    id: string;
+    name: string;
+    quantity: number;
+}
+
 export default function Home() {
     const router = useRouter();
     const {isAuthenticated} = useAuth();
@@ -117,17 +124,42 @@ export default function Home() {
 
     }, [fetchData, selection.school]);
 
-    const handleClassSelect = useCallback((item: SelectItem) => {
+    const handleClassSelect = useCallback(async (item: SelectItem) => {
         console.log('Selected Class:', item.name);
         // 1. Retain school and grade, set class
         setSelection(prev => ({ ...prev, class: item }));
         setEquipmentData(null);
 
-        // 2. Fetch Equipment immediately (CRITICAL FIX: Pass ALL THREE IDs)
+        // 2. Fetch Equipment immediately
         const endpoint = `/api/equipment?school_id=${selection.school?.id}&grade_id=${selection.grade?.id}&class_id=${item.id}`;
-        fetchData(endpoint, setEquipmentData);
 
-    }, [fetchData, selection.school, selection.grade]);
+        setIsLoading(true);
+        try {
+            const url = `${API_BASE_URL}${endpoint}`;
+            console.log('Fetching from:', url);
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Failed to fetch data from ${endpoint}. Status: ${response.status}`);
+            const items = await response.json();
+
+            // Transform the Go backend response (array) into the expected structure
+            const wrappedData: EquipmentData = {
+                classId: parseInt(`${selection.school?.id}${selection.grade?.id}${item.id}`, 10),
+                className: `${selection.school?.name} - Grade ${selection.grade?.name} - ${item.name}`,
+                items: (items || []).map((equipItem: EquipmentItemResponse) => ({
+                    id: parseInt(equipItem.id, 10),
+                    name: equipItem.name,
+                    quantity: equipItem.quantity
+                }))
+            };
+
+            setEquipmentData(wrappedData);
+        } catch (error) {
+            console.error(`Error fetching equipment:`, error);
+        } finally {
+            setIsLoading(false);
+        }
+
+    }, [selection.school, selection.grade]);
 
     const handleToggleEquipment = (id: number) => {
         setSelectedEquipment(prev => {
