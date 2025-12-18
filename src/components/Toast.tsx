@@ -30,7 +30,10 @@ export default function Toast({ message, isVisible, onClose, duration = 3000 }: 
 
     return (
         <div className="fixed bottom-6 right-6 z-50">
-            <div className="relative bg-emerald-600 text-white px-6 py-4 rounded-lg shadow-lg overflow-hidden min-w-[280px]">
+            <div
+                className="relative bg-emerald-600 text-white px-6 py-4 rounded-lg shadow-lg overflow-hidden min-w-[280px] animate-toast-fade-out"
+                style={{ animationDuration: `${duration}ms` }}
+            >
                 <div className="flex items-center gap-3">
                     {/* Success checkmark icon */}
                     <svg

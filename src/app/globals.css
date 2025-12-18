@@ -34,11 +34,31 @@ body {
         width: 100%;
     }
     to {
-        width: 0%;
+        width: 0;
     }
 }
 
 .animate-timer-line {
     animation: timer-line linear forwards;
+}
+
+/* Toast fade-out animation - stays visible then fades away */
+@keyframes toast-fade-out {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    70% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+}
+
+.animate-toast-fade-out {
+    animation: toast-fade-out linear forwards;
 }
 
