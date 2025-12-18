@@ -5,8 +5,10 @@ import {useRouter} from 'next/navigation';
 import Layout from '@/components/Layout';
 import SearchableSelect, {SelectItem} from '@/components/SearchableSelect';
 import EquipmentList, {EquipmentData} from '@/components/EquipmentList';
+import SaveToCartButton from '@/components/SaveToCartButton';
 import {useAuth} from '@/contexts/AuthContext';
-        
+import {CartProvider} from '@/contexts/CartContext';
+
 // Define the API URL using the environment variable injected by Docker Compose.
 // CRITICAL: Next.js must be told which URL to use for the API Gateway service.
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
@@ -187,7 +189,8 @@ export default function Home() {
     }
 
     return (
-        <Layout>
+        <CartProvider>
+            <Layout>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="text-center mb-12">
                     <h1 className="text-4xl font-bold text-zinc-900 dark:text-white mb-4">
@@ -237,16 +240,28 @@ export default function Home() {
                     )}
 
                     {equipmentData && (
-                        <EquipmentList
-                            data={equipmentData}
-                            selectedIds={selectedEquipment}
-                            quantities={quantities}
-                            onToggle={handleToggleEquipment}
-                            onQuantityChange={handleQuantityChange}
-                        />
+                        <>
+                            <EquipmentList
+                                data={equipmentData}
+                                selectedIds={selectedEquipment}
+                                quantities={quantities}
+                                onToggle={handleToggleEquipment}
+                                onQuantityChange={handleQuantityChange}
+                            />
+                            <SaveToCartButton
+                                school={selection.school ? { id: Number(selection.school.id), name: selection.school.name } : null}
+                                grade={selection.grade ? { id: Number(selection.grade.id), name: selection.grade.name } : null}
+                                classInfo={selection.class ? { id: Number(selection.class.id), name: selection.class.name } : null}
+                                selectedIds={selectedEquipment}
+                                quantities={quantities}
+                                items={equipmentData.items}
+                                disabled={isLoading}
+                            />
+                        </>
                     )}
                 </div>
             </div>
         </Layout>
+        </CartProvider>
     );
 }
