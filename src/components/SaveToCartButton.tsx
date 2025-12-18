@@ -106,6 +106,7 @@ export default function SaveToCartButton({
                 isVisible={showToast}
                 onClose={handleCloseToast}
                 duration={DISABLED_DURATION}
+                delay={100}
             />
         </>
     );

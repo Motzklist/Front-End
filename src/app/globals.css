@@ -42,6 +42,18 @@ body {
     animation: timer-line linear forwards;
 }
 
+/* Toast entrance animation - slides up and fades in */
+@keyframes toast-enter {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Toast fade-out animation - stays visible then fades away */
 @keyframes toast-fade-out {
     0% {
@@ -56,6 +68,41 @@ body {
         opacity: 0;
         transform: translateY(10px);
     }
+}
+
+/* Combined entrance + fade-out animation for toast lifecycle */
+@keyframes toast-lifecycle {
+    /* Entrance phase: 0-8% (roughly 250ms of a 3000ms animation) */
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    8% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    /* Stay visible */
+    70% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    /* Fade out */
+    100% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+}
+
+.animate-toast-lifecycle {
+    animation: toast-lifecycle linear forwards;
+}
+
+.animate-toast-enter {
+    animation: toast-enter 250ms ease-out forwards;
+}
+
+.animate-toast-enter-fade-out {
+    animation: toast-enter 250ms ease-out forwards, toast-fade-out linear forwards;
 }
 
 .animate-toast-fade-out {

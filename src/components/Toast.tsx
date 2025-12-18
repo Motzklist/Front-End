@@ -1,37 +1,65 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 interface ToastProps {
     message: string;
     isVisible: boolean;
     onClose: () => void;
     duration?: number;
+    delay?: number;
 }
 
-export default function Toast({ message, isVisible, onClose, duration = 3000 }: ToastProps) {
+export default function Toast({ message, isVisible, onClose, duration = 3000, delay = 0 }: ToastProps) {
     const onCloseRef = useRef(onClose);
+    const [showContent, setShowContent] = useState(false);
+    const delayTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const dismissTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     // Keep the ref up to date with the latest callback
     useEffect(() => {
         onCloseRef.current = onClose;
     });
 
+    // Cleanup function to clear all timers
+    const clearAllTimers = useCallback(() => {
+        if (delayTimerRef.current) {
+            clearTimeout(delayTimerRef.current);
+            delayTimerRef.current = null;
+        }
+        if (dismissTimerRef.current) {
+            clearTimeout(dismissTimerRef.current);
+            dismissTimerRef.current = null;
+        }
+    }, []);
+
+    // Handle visibility changes
     useEffect(() => {
         if (isVisible) {
-            const timer = setTimeout(() => {
-                onCloseRef.current();
-            }, duration);
-            return () => clearTimeout(timer);
+            // Start delay timer
+            delayTimerRef.current = setTimeout(() => {
+                setShowContent(true);
+                // Start dismiss timer after delay completes
+                dismissTimerRef.current = setTimeout(() => {
+                    onCloseRef.current();
+                }, duration);
+            }, delay);
         }
-    }, [isVisible, duration]);
 
-    if (!isVisible) return null;
+        return () => {
+            // Cleanup: clear timers and reset state
+            clearAllTimers();
+            // Use setTimeout to avoid synchronous setState in effect
+            setTimeout(() => setShowContent(false), 0);
+        };
+    }, [isVisible, delay, duration, clearAllTimers]);
+
+    if (!showContent) return null;
 
     return (
         <div className="fixed bottom-6 right-6 z-50">
             <div
-                className="relative bg-emerald-600 text-white px-6 py-4 rounded-lg shadow-lg overflow-hidden min-w-[280px] animate-toast-fade-out"
+                className="relative bg-emerald-600 text-white px-6 py-4 rounded-lg shadow-lg overflow-hidden min-w-[280px] animate-toast-lifecycle"
                 style={{ animationDuration: `${duration}ms` }}
             >
                 <div className="flex items-center gap-3">
