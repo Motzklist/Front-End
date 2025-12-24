@@ -33,6 +33,8 @@ export function AuthProvider({children}: { children: ReactNode }) {
 
     const logout = () => {
         sessionStorage.removeItem('isAuthenticated');
+        // Also clear cart data on logout
+        sessionStorage.removeItem('motzkin_cart');
         setIsAuthenticated(false);
     };
 

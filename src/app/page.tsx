@@ -5,8 +5,9 @@ import {useRouter} from 'next/navigation';
 import Layout from '@/components/Layout';
 import SearchableSelect, {SelectItem} from '@/components/SearchableSelect';
 import EquipmentList, {EquipmentData} from '@/components/EquipmentList';
+import SaveToCartButton from '@/components/SaveToCartButton';
 import {useAuth} from '@/contexts/AuthContext';
-        
+
 // Define the API URL using the environment variable injected by Docker Compose.
 // CRITICAL: Next.js must be told which URL to use for the API Gateway service.
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
@@ -122,7 +123,7 @@ export default function Home() {
         const endpoint = `/api/classes?school_id=${selection.school?.id}&grade_id=${item.id}`;
         fetchData(endpoint, setClasses);
 
-    }, [fetchData, selection.school]);
+    }, [fetchData, selection.school?.id]);
 
     const handleClassSelect = useCallback(async (item: SelectItem) => {
         console.log('Selected Class:', item.name);
@@ -159,7 +160,7 @@ export default function Home() {
             setIsLoading(false);
         }
 
-    }, [selection.school, selection.grade]);
+    }, [selection.school?.id, selection.grade?.id, selection.school?.name, selection.grade?.name]);
 
     const handleToggleEquipment = (id: number) => {
         setSelectedEquipment(prev => {
@@ -237,13 +238,24 @@ export default function Home() {
                     )}
 
                     {equipmentData && (
-                        <EquipmentList
-                            data={equipmentData}
-                            selectedIds={selectedEquipment}
-                            quantities={quantities}
-                            onToggle={handleToggleEquipment}
-                            onQuantityChange={handleQuantityChange}
-                        />
+                        <>
+                            <EquipmentList
+                                data={equipmentData}
+                                selectedIds={selectedEquipment}
+                                quantities={quantities}
+                                onToggle={handleToggleEquipment}
+                                onQuantityChange={handleQuantityChange}
+                            />
+                            <SaveToCartButton
+                                school={selection.school ? { id: Number(selection.school.id), name: selection.school.name } : null}
+                                grade={selection.grade ? { id: Number(selection.grade.id), name: selection.grade.name } : null}
+                                classInfo={selection.class ? { id: Number(selection.class.id), name: selection.class.name } : null}
+                                selectedIds={selectedEquipment}
+                                quantities={quantities}
+                                items={equipmentData.items}
+                                disabled={isLoading}
+                            />
+                        </>
                     )}
                 </div>
             </div>

@@ -1,13 +1,26 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import {useRouter} from 'next/navigation';
-import {useAuth} from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useCart } from '@/contexts/CartContext';
 
 export default function Header() {
     const router = useRouter();
-    const {isAuthenticated, logout} = useAuth();
+    const { isAuthenticated, logout } = useAuth();
 
+    // Only access cart context when authenticated (CartProvider is available)
+    let cartEntries: { id: string }[] = [];
+    try {
+        const cart = useCart();
+        cartEntries = cart.cartEntries;
+    } catch {
+        // CartProvider not available (not authenticated)
+    }
+
+    const hasItems = cartEntries.length > 0;
+    
     const handleLogout = () => {
         logout();
         router.replace('/login');
@@ -42,12 +55,27 @@ export default function Header() {
                             Contact
                         </Link>
                         {isAuthenticated && (
-                            <button
-                                onClick={handleLogout}
-                                className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors font-medium"
-                            >
-                                Logout
-                            </button>
+                            <>
+                                <Link
+                                    href="/cart"
+                                    className="relative text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+                                    title="View Cart"
+                                >
+                                    <Image
+                                        src={hasItems ? "/cart-full.svg" : "/cart-empty.svg"}
+                                        alt="Cart"
+                                        width={24}
+                                        height={24}
+                                        className="dark:invert"
+                                    />
+                                </Link>
+                                <button
+                                    onClick={handleLogout}
+                                    className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors font-medium"
+                                >
+                                    Logout
+                                </button>
+                            </>
                         )}
                     </div>
                 </div>
