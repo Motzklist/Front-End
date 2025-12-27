@@ -7,7 +7,6 @@ import SearchableSelect, {SelectItem} from '@/components/SearchableSelect';
 import EquipmentList, {EquipmentData} from '@/components/EquipmentList';
 import SaveToCartButton from '@/components/SaveToCartButton';
 import {useAuth} from '@/contexts/AuthContext';
-import LoginForm from '@/components/LoginForm';
 
 // Define the API URL using the environment variable injected by Docker Compose.
 // CRITICAL: Next.js must be told which URL to use for the API Gateway service.
@@ -32,12 +31,8 @@ export default function Home() {
     const {isAuthenticated} = useAuth();
 
     if (!isAuthenticated) {
-        // Render the login form directly if not authenticated
-        return (
-            <div className="min-h-screen flex items-center justify-center px-4 bg-background">
-                <LoginForm />
-            </div>
-        );
+        // Consistency: Let ProtectedRoute handle unauthenticated state
+        return null;
     }
 
     // State to track the currently selected items
