@@ -17,6 +17,8 @@ interface SearchableSelectProps {
     disabled?: boolean;
 }
 
+const BLUR_CLOSE_DELAY_MS = 200;
+
 export default function SearchableSelect({
                                              label,
                                              items,
@@ -62,7 +64,7 @@ export default function SearchableSelect({
                     setIsOpen(true);
                 }}
                 onFocus={() => !disabled && setIsOpen(true)}
-                onBlur={() => setTimeout(() => setIsOpen(false), 200)} // TODO: Replace magic number
+                onBlur={() => setTimeout(() => setIsOpen(false), BLUR_CLOSE_DELAY_MS)}
             />
 
             {isOpen && !disabled && filteredItems.length > 0 && (
@@ -81,4 +83,3 @@ export default function SearchableSelect({
         </div>
     );
 }
-

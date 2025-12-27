@@ -2,6 +2,7 @@ import type {Metadata} from "next";
 import "./globals.css";
 import {AuthProvider} from "@/contexts/AuthContext";
 import AuthenticatedProviders from "@/components/AuthenticatedProviders";
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 export const metadata: Metadata = {
     title: "Motzkin Store - School Equipment",
@@ -18,7 +19,9 @@ export default function RootLayout({
         <body className="antialiased" suppressHydrationWarning>
         <AuthProvider>
             <AuthenticatedProviders>
-                {children}
+                <ProtectedRoute>
+                    {children}
+                </ProtectedRoute>
             </AuthenticatedProviders>
         </AuthProvider>
         </body>

@@ -1,7 +1,6 @@
 'use client';
 
 import {useState, useEffect, useCallback} from 'react';
-import {useRouter} from 'next/navigation';
 import Layout from '@/components/Layout';
 import SearchableSelect, {SelectItem} from '@/components/SearchableSelect';
 import EquipmentList, {EquipmentData} from '@/components/EquipmentList';
@@ -21,15 +20,16 @@ interface SelectionState {
 
 // Define the equipment item structure from Go backend
 interface EquipmentItemResponse {
-    id: string;
+    id: number;
     name: string;
     quantity: number;
 }
 
 export default function Home() {
-    const router = useRouter();
     const {isAuthenticated} = useAuth();
-    
+
+    // Removed redundant authentication check; ProtectedRoute in layout handles this
+
     // State to track the currently selected items
     const [selection, setSelection] = useState<SelectionState>({
         school: null,
@@ -46,16 +46,10 @@ export default function Home() {
     const [quantities, setQuantities] = useState<Map<number, number>>(new Map());
     const [isLoading, setIsLoading] = useState(false);
 
-    // Check authentication and redirect if not authenticated
-    useEffect(() => {
-        if (!isAuthenticated) {
-            router.push('/login');
-        }
-    }, [isAuthenticated, router]);
 
     // --- Utility Fetch Function ---
     // Memoize the function for use in useEffect dependencies
-    const fetchData = useCallback(async (endpoint: string, setter: (data: SelectItem[] | any) => void, resetSelections: boolean = true) => {
+    const fetchData = useCallback(async (endpoint: string, setter: (data: SelectItem[] | EquipmentItemResponse[] | any) => void, resetSelections: boolean = true) => {
         if (resetSelections) {
             setter([]);
             setEquipmentData(null);
@@ -69,6 +63,15 @@ export default function Home() {
             const response = await fetch(url);
             if (!response.ok) throw new Error(`Failed to fetch data from ${endpoint}. Status: ${response.status}`);
             const data = await response.json();
+            // If fetching equipment, convert id to number
+            if (endpoint.startsWith('/api/equipment')) {
+                if (data.items) {
+                    data.items = data.items.map((item: any) => ({
+                        ...item,
+                        id: typeof item.id === 'string' ? parseInt(item.id, 10) : item.id
+                    }));
+                }
+            }
             setter(data);
         } catch (error) {
             console.error(`Error fetching data for ${endpoint}:`, error);
@@ -79,19 +82,19 @@ export default function Home() {
 
     // 1. Fetch Schools (Runs once on component mount)
     useEffect(() => {
-        // We pass 'false' for resetSelections since we are setting the initial data for schools
+        if (!isAuthenticated) return; // Only fetch schools if authenticated
         fetchData('/api/schools', setSchools, false);
-    }, [fetchData]);
-    
+    }, [fetchData, isAuthenticated]);
+
     // Initialize all items as selected when equipment data loads
     useEffect(() => {
         if (equipmentData) {
-            const allIds = new Set(equipmentData.items.map(item => parseInt(item.id as any))); // TODO: Settle if using numberor string
+            const allIds = new Set(equipmentData.items.map(item => item.id));
             setSelectedEquipment(allIds);
 
             const initialQuantities = new Map(
-                equipmentData.items.map(item => [parseInt(item.id as any), item.quantity])
-            ); // TODO: Settle if using numberor string
+                equipmentData.items.map(item => [item.id, item.quantity])
+            );
             setQuantities(initialQuantities);
         }
     }, [equipmentData]);
@@ -140,17 +143,16 @@ export default function Home() {
             console.log('Fetching from:', url);
             const response = await fetch(url);
             if (!response.ok) throw new Error(`Failed to fetch data from ${endpoint}. Status: ${response.status}`);
-            const items = await response.json();
-
+            const data = await response.json();
+            const itemsArray = Array.isArray(data.items) ? data.items.map((equipItem: any) => ({
+                ...equipItem,
+                id: typeof equipItem.id === 'string' ? parseInt(equipItem.id, 10) : equipItem.id
+            })) : [];
             // Transform the Go backend response (array) into the expected structure
             const wrappedData: EquipmentData = {
-                classId: parseInt(`${selection.school?.id}${selection.grade?.id}${item.id}`, 10),
+                classId: Number(`${selection.school?.id}${selection.grade?.id}${item.id}`),
                 className: `${selection.school?.name} - Grade ${selection.grade?.name} - ${item.name}`,
-                items: (items || []).map((equipItem: EquipmentItemResponse) => ({
-                    id: parseInt(equipItem.id, 10),
-                    name: equipItem.name,
-                    quantity: equipItem.quantity
-                }))
+                items: itemsArray
             };
 
             setEquipmentData(wrappedData);
@@ -182,10 +184,6 @@ export default function Home() {
         });
     };
 
-    // Don't render content if not authenticated
-    if (!isAuthenticated) {
-        return null;
-    }
 
     return (
         <Layout>
