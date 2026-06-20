@@ -29,7 +29,7 @@ export default function OrderHistoryPage() {
         setState('loading');
         setErrorMessage(null);
 
-        getOrderHistory()
+        getOrderHistory(locale)
             .then(data => {
                 if (cancelled) return;
                 setOrders(data);
@@ -45,7 +45,7 @@ export default function OrderHistoryPage() {
         return () => {
             cancelled = true;
         };
-    }, [isAuthenticated, userid, t]);
+    }, [isAuthenticated, userid, t, locale]);
 
     const dateLocale = locale === 'he' ? 'he-IL' : 'en-GB';
     const formatCurrency = (amount: number) => tCommon('currencyILS', { amount: amount.toFixed(2) });
