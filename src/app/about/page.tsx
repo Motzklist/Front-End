@@ -17,7 +17,7 @@ const teamMembers: TeamMember[] = [
     { login: 'NoamBenShimon',     name: 'Noam Ben Shimon', role: 'Team Member' },
     { login: 'roishm',            name: 'Roi Shmerling',   role: 'Team Member' },
     { login: 'Tomer-David',       name: null,              role: 'Team Member' },
-    { login: 'vMaroon',           name: 'Maroon Ayoub',    role: 'Mentor' },
+    { login: 'DianaCohenCS',      name: 'Diana Cohen',     role: 'Mentor' },
 ];
 
 export default function AboutPage() {

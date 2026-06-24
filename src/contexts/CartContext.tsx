@@ -22,6 +22,7 @@
 'use client';
 
 import { createContext, useContext, useState, useCallback, ReactNode, useEffect, useRef } from 'react';
+import { useLocale } from 'next-intl';
 import * as api from '@/services/api';
 import type { CartApiEntry, CartApiItem } from '@/services/api';
 import { CartEntryPayload, CartItem } from '@/types/cart';
@@ -59,6 +60,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
     const { userid, isAuthenticated } = useAuth();
+    const locale = useLocale();
     const [cartEntries, setCartEntries] = useState<CartEntry[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -109,7 +111,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setLoading(true);
         setError(null);
         try {
-            const data = await api.getCart(userid);
+            const data = await api.getCart(userid, locale);
             const normalized: CartEntry[] = Array.isArray(data)
                 ? data.map((entry: CartApiEntry, index: number) => normalizeEntry(entry, index))
                 : [];
@@ -123,7 +125,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         } finally {
             setLoading(false);
         }
-    }, [userid]);
+    }, [userid, locale]);
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
@@ -157,7 +159,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 })),
             };
             try {
-                const current = (await api.getCart(userid)) as CartEntry[];
+                const current = (await api.getCart(userid, locale)) as CartEntry[];
                 const next = [...current, newEntry];
                 setCartEntries(next); // Optimistic update.
                 await api.updateCart(userid, next);
@@ -168,14 +170,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 await fetchCart(); // Roll back to authoritative server state.
             }
         });
-    }, [userid, fetchCart, enqueueMutation]);
+    }, [userid, locale, fetchCart, enqueueMutation]);
 
     const removeFromCart = useCallback(async (id: string) => {
         if (!userid) return;
         return enqueueMutation(async () => {
             setError(null);
             try {
-                const current = (await api.getCart(userid)) as CartEntry[];
+                const current = (await api.getCart(userid, locale)) as CartEntry[];
                 const next = current.filter(entry => entry.id !== id);
                 setCartEntries(next);
                 await api.updateCart(userid, next);
@@ -186,7 +188,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 await fetchCart();
             }
         });
-    }, [userid, fetchCart, enqueueMutation]);
+    }, [userid, locale, fetchCart, enqueueMutation]);
 
     const clearCart = useCallback(async () => {
         if (!userid) return;

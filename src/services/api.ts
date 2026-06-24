@@ -137,11 +137,13 @@ export async function checkAuth() {
  * Retrieves the shopping cart for a specific user.
  *
  * @param userid - The unique identifier of the user
+ * @param lang - Active UI locale; the backend localizes school/grade/item names
  * @returns Promise resolving to the user's cart data
  * @throws {Error} If cart fetch fails
  */
-export async function getCart(userid: string): Promise<CartApiEntry[]> {
-    const res = await fetch(`${getApiBase()}/api/cart?userid=${encodeURIComponent(userid)}`, {
+export async function getCart(userid: string, lang?: string): Promise<CartApiEntry[]> {
+    const langParam = lang ? `&lang=${encodeURIComponent(lang)}` : '';
+    const res = await fetch(`${getApiBase()}/api/cart?userid=${encodeURIComponent(userid)}${langParam}`, {
         method: 'GET',
         credentials: 'include',
     });
@@ -273,11 +275,13 @@ export async function getOrder(orderId: string): Promise<Order> {
  * Fetches the authenticated user's full order history.
  * The backend reads the user from the session cookie.
  *
+ * @param lang - Active UI locale; the backend localizes equipment names
  * @returns Promise resolving to the user's past orders, most recent first
  * @throws {Error} If the history fetch fails or the user is unauthenticated
  */
-export async function getOrderHistory(): Promise<OrderHistoryEntry[]> {
-    const res = await fetch(`${getApiBase()}/api/history`, {
+export async function getOrderHistory(lang?: string): Promise<OrderHistoryEntry[]> {
+    const langParam = lang ? `?lang=${encodeURIComponent(lang)}` : '';
+    const res = await fetch(`${getApiBase()}/api/history${langParam}`, {
         method: 'GET',
         credentials: 'include',
     });

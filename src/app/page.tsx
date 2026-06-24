@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import Layout from '@/components/Layout';
 import SearchableSelect, { SelectItem } from '@/components/SearchableSelect';
 import EquipmentList, { EquipmentData } from '@/components/EquipmentList';
@@ -70,6 +70,7 @@ const areNumberMapsEqual = (a: Map<number, number>, b: Map<number, number>): boo
 export default function Home() {
     const { isAuthenticated } = useAuth();
     const t = useTranslations('Home');
+    const locale = useLocale();
 
     const [selection, setSelection] = useState<SelectionState>({ school: null, grade: null });
     const [schools, setSchools] = useState<SelectItem[]>([]);
@@ -93,7 +94,9 @@ export default function Home() {
 
             setIsLoading(true);
             try {
-                const url = `${API_BASE_URL}${endpoint}`;
+                // Tell the backend which language to localize school/grade/item names into.
+                const sep = endpoint.includes('?') ? '&' : '?';
+                const url = `${API_BASE_URL}${endpoint}${sep}lang=${encodeURIComponent(locale)}`;
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`Failed to fetch ${endpoint}. Status: ${response.status}`);
                 const data = (await response.json()) as unknown;
@@ -111,7 +114,7 @@ export default function Home() {
                 setIsLoading(false);
             }
         },
-        []
+        [locale]
     );
 
     useEffect(() => {
@@ -120,10 +123,39 @@ export default function Home() {
         fetchData('/api/schools', setSchools, false);
     }, [fetchData, isAuthenticated]);
 
+    // When the language changes, re-fetch the localized grade list and equipment
+    // for the current selection so their names switch in place (the schools list
+    // reloads via the effect above because fetchData depends on locale).
+    useEffect(() => {
+        if (selection.school) {
+            fetchData(`/api/grades?school_id=${selection.school.id}`, setGrades, false);
+        }
+        if (selection.school && selection.grade) {
+            fetchData(
+                `/api/equipment?school_id=${selection.school.id}&grade_id=${selection.grade.id}`,
+                setEquipmentData,
+                false
+            );
+        }
+        // selection is intentionally read but not depended on: this should only
+        // run on a language switch, not when the user changes their selection.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [locale]);
+
     const [prevEquipmentData, setPrevEquipmentData] = useState<EquipmentData | null>(equipmentData);
     if (equipmentData !== prevEquipmentData) {
+        // A re-fetch of the same item set (e.g. switching language) should keep
+        // the user's current selection and quantities; only a genuinely
+        // different list (new grade) resets them to defaults.
+        const sameList =
+            prevEquipmentData != null &&
+            equipmentData != null &&
+            areNumberSetsEqual(
+                new Set(prevEquipmentData.items.map(item => item.id)),
+                new Set(equipmentData.items.map(item => item.id))
+            );
         setPrevEquipmentData(equipmentData);
-        if (equipmentData) {
+        if (equipmentData && !sameList) {
             const allIds = new Set(equipmentData.items.map(item => item.id));
             const initialQuantities = new Map(equipmentData.items.map(item => [item.id, item.quantity]));
             setSelectedEquipment(prev => (areNumberSetsEqual(prev, allIds) ? prev : allIds));
