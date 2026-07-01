@@ -2,7 +2,6 @@
 
 import { useTranslations } from 'next-intl';
 import Layout from '@/components/Layout';
-import Link from 'next/link';
 
 export default function ContactPage() {
     const t = useTranslations('Contact');
@@ -21,9 +20,9 @@ export default function ContactPage() {
                     </p>
                 </header>
 
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-12">
+                <div className="mb-12">
                     {/* Municipality */}
-                    <section className="lg:col-span-3 surface-card overflow-hidden animate-rise-in delay-1">
+                    <section className="surface-card overflow-hidden animate-rise-in delay-1">
                         <div className="px-7 pt-6 pb-1 bg-(--surface-sunken) border-b border-(--line)">
                             <p className="eyebrow mb-1">{t('municipalityEyebrow')}</p>
                             <h2 className="font-display text-[1.7rem] tracking-tight text-(--ink-1) mb-3 leading-tight">
@@ -89,27 +88,6 @@ export default function ContactPage() {
                                     kiryat-motzkin.muni.il →
                                 </a>
                             </ContactRow>
-                        </div>
-                    </section>
-
-                    {/* Development team */}
-                    <section className="lg:col-span-2 surface-card flex flex-col animate-rise-in delay-2">
-                        <div className="px-7 pt-6 pb-1 bg-(--surface-sunken) border-b border-(--line)">
-                            <p className="eyebrow mb-1">{t('developmentEyebrow')}</p>
-                            <h2 className="font-display text-[1.55rem] tracking-tight text-(--ink-1) mb-3 leading-tight">
-                                {t('devTeamHeading')}
-                            </h2>
-                        </div>
-                        <div className="px-7 py-6 flex-1 flex flex-col">
-                            <p className="text-[14px] leading-relaxed text-ink-2 mb-4">
-                                {t('devTeamIntro')}
-                            </p>
-                            <p className="text-[14px] leading-relaxed text-ink-2 mb-6">
-                                {t('devTeamFind')}
-                            </p>
-                            <Link href="/about" className="btn btn-quiet mt-auto self-start">
-                                {t('viewTeam')}
-                            </Link>
                         </div>
                     </section>
                 </div>

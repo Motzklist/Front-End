@@ -74,11 +74,6 @@ export default function Footer() {
                             ),
                         })}
                     </p>
-                    <div className="flex items-center gap-5">
-                        <a href="/privacy" className="hover:text-[var(--ink-1)] transition-colors">{t('privacy')}</a>
-                        <span className="text-[var(--line-strong)]">·</span>
-                        <a href="/terms" className="hover:text-[var(--ink-1)] transition-colors">{t('terms')}</a>
-                    </div>
                 </div>
             </div>
         </footer>
