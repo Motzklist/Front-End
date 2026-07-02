@@ -362,7 +362,7 @@ type CheckoutSessionResponse = {
  * @throws {Error} If session creation fails
  */
 export async function createCheckoutSession(payload: CheckoutSessionRequest): Promise<CheckoutSessionResponse> {
-    const res = await fetch(`${getApiBase()}/create-checkout-session`, {
+    const res = await fetch(`${getApiBase()}/api/create-checkout-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
