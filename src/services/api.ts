@@ -129,6 +129,27 @@ export async function checkAuth() {
     return res.json();
 }
 
+/**
+ * Builds the backend URL that starts a third-party (OAuth) sign-in.
+ *
+ * The frontend never handles OAuth client secrets or token exchange. It simply
+ * navigates the browser to this backend endpoint; the backend redirects on to
+ * the identity provider (Google, etc.), handles the callback, establishes the
+ * session cookie, and redirects the browser back to `callbackUrl`. This mirrors
+ * how the payment provider delegates the sensitive work to the backend.
+ *
+ * Expected backend contract:
+ *   GET /api/auth/{provider}/start?redirect_uri={callbackUrl}
+ *
+ * @param provider - The identity provider id (e.g. 'google')
+ * @param callbackUrl - Absolute URL the backend should return the user to
+ * @returns The absolute backend start URL to navigate to
+ */
+export function getOAuthStartUrl(provider: string, callbackUrl: string): string {
+    const redirect = encodeURIComponent(callbackUrl);
+    return `${getApiBase()}/api/auth/${encodeURIComponent(provider)}/start?redirect_uri=${redirect}`;
+}
+
 // =============================================================================
 // Cart API
 // =============================================================================

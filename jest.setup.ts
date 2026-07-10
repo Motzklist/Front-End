@@ -32,9 +32,14 @@ const resolve = (namespace: string | undefined, key: string): string => {
 };
 
 jest.mock('next-intl', () => ({
-    useTranslations: (namespace?: string) =>
-        (key: string, params?: Record<string, unknown>) =>
-            interpolate(resolve(namespace, key), params),
+    useTranslations: (namespace?: string) => {
+        const t = (key: string, params?: Record<string, unknown>) =>
+            interpolate(resolve(namespace, key), params);
+        // t.rich renders formatted messages with tag callbacks in real next-intl;
+        // for tests we resolve the raw template (tags left as literal text).
+        t.rich = (key: string) => resolve(namespace, key);
+        return t;
+    },
     useLocale: () => 'en',
     useFormatter: () => ({
         number: (v: number) => String(v),

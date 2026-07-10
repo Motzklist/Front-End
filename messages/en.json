@@ -71,7 +71,21 @@
     "submit": "Login",
     "submitting": "Signing in…",
     "failed": "Failed to login. Please try again.",
-    "trouble": "Trouble signing in? Call the municipal service centre at <phone>04-878-0900</phone> or dial <quickDial>*5470</quickDial>."
+    "trouble": "Trouble signing in? Call the municipal service centre at <phone>04-878-0900</phone> or dial <quickDial>*5470</quickDial>.",
+    "continueWith": "Continue with {provider}",
+    "redirectIntro": "You'll be securely redirected to {provider} to sign in.",
+    "redirecting": "Redirecting…"
+  },
+  "Auth": {
+    "signingIn": "Signing you in…",
+    "failedTitle": "Sign-in failed",
+    "failedMessage": "We couldn't complete your sign-in. Please try again.",
+    "backToLogin": "Back to login",
+    "mockBanner": "Mock Identity Provider — Development Only",
+    "mockTitle": "Sign in with {provider}",
+    "mockIntro": "This is a simulated third-party consent screen. In production this is the real provider's sign-in page.",
+    "mockApprove": "Approve & continue",
+    "mockCancel": "Cancel"
   },
   "EquipmentList": {
     "eyebrow": "Equipment list",

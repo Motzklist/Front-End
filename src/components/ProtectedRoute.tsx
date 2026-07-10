@@ -20,12 +20,19 @@ function AuthSpinner() {
     );
 }
 
+// Paths reachable while unauthenticated. `/login` is the sign-in screen; the
+// `/auth/*` routes handle the round-trip to a third-party identity provider
+// (the OAuth callback and the local mock consent screen), which by definition
+// runs before a session exists.
+const PUBLIC_PATHS = ['/login', '/auth/callback', '/auth/mock-consent'];
+
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { isAuthenticated, isLoading } = useAuth();
     const pathname = usePathname();
     const router = useRouter();
 
-    const needsRedirect = !isLoading && !isAuthenticated && pathname !== '/login';
+    const isPublicPath = PUBLIC_PATHS.includes(pathname);
+    const needsRedirect = !isLoading && !isAuthenticated && !isPublicPath;
 
     useEffect(() => {
         // Wait for the initial auth check to settle before redirecting.

@@ -80,6 +80,12 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
+# Authentication provider (build-time; NEXT_PUBLIC_* is inlined into the bundle).
+# 'api' = username/password (default), 'google'/'microsoft' = third-party OAuth,
+# 'mock-oauth' = local redirect demo. See src/services/auth/.
+ARG NEXT_PUBLIC_AUTH_PROVIDER=api
+ENV NEXT_PUBLIC_AUTH_PROVIDER=${NEXT_PUBLIC_AUTH_PROVIDER}
+
 # Build the Next.js application
 RUN npm run build
 

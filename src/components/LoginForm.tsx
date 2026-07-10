@@ -6,6 +6,14 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 
+// Human-readable labels for redirect (third-party) providers. Falls back to the
+// raw provider name for anything not listed here.
+const PROVIDER_LABELS: Record<string, string> = {
+    google: 'Google',
+    microsoft: 'Microsoft',
+    'mock-oauth': 'Mock Google',
+};
+
 export default function LoginForm() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -14,8 +22,11 @@ export default function LoginForm() {
     const [showPwd, setShowPwd] = useState(false);
 
     const router = useRouter();
-    const { login } = useAuth();
+    const { login, loginWithProvider, authMethod, providerName } = useAuth();
     const t = useTranslations('Login');
+
+    const isRedirectProvider = authMethod === 'redirect';
+    const providerLabel = PROVIDER_LABELS[providerName] ?? providerName;
 
     const isFormValid = username.trim() !== '' && password.trim() !== '';
 
@@ -35,6 +46,31 @@ export default function LoginForm() {
             setIsLoading(false);
         }
     };
+
+    const handleProviderLogin = async () => {
+        setError('');
+        setIsLoading(true);
+        try {
+            // Navigates away to the identity provider; the /auth/callback route
+            // finalises the session on return. No router.push here.
+            await loginWithProvider();
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : '';
+            setError(message || t('failed'));
+            setIsLoading(false);
+        }
+    };
+
+    const errorBanner = error && (
+        <div className="flex items-start gap-2.5 px-3.5 py-3 bg-(--bad-50) border border-(--bad-500)/30 rounded text-[13px] text-(--bad-700) animate-rise-in">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="flex-shrink-0 mt-0.5">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
+                <path d="M12 8v5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                <circle cx="12" cy="16" r="0.8" fill="currentColor" />
+            </svg>
+            <span>{error}</span>
+        </div>
+    );
 
     return (
         <div className="w-full max-w-md mx-auto">
@@ -63,17 +99,34 @@ export default function LoginForm() {
                     </p>
                 </header>
 
+                {isRedirectProvider ? (
+                    <div className="space-y-5">
+                        {errorBanner}
+                        <p className="text-[0.9rem] text-ink-2">
+                            {t('redirectIntro', { provider: providerLabel })}
+                        </p>
+                        <button
+                            type="button"
+                            onClick={handleProviderLogin}
+                            disabled={isLoading}
+                            className="btn btn-primary w-full mt-2"
+                        >
+                            {isLoading ? (
+                                <>
+                                    <svg className="animate-spin-slow" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.3" strokeWidth="2.5" />
+                                        <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                                    </svg>
+                                    {t('redirecting')}
+                                </>
+                            ) : (
+                                t('continueWith', { provider: providerLabel })
+                            )}
+                        </button>
+                    </div>
+                ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">
-                    {error && (
-                        <div className="flex items-start gap-2.5 px-3.5 py-3 bg-(--bad-50) border border-(--bad-500)/30 rounded text-[13px] text-(--bad-700) animate-rise-in">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="flex-shrink-0 mt-0.5">
-                                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
-                                <path d="M12 8v5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                                <circle cx="12" cy="16" r="0.8" fill="currentColor" />
-                            </svg>
-                            <span>{error}</span>
-                        </div>
-                    )}
+                    {errorBanner}
 
                     <div>
                         <label htmlFor="username" className="field-label">{t('usernameLabel')}</label>
@@ -132,6 +185,7 @@ export default function LoginForm() {
                         )}
                     </button>
                 </form>
+                )}
 
                 <div className="divider-soft mt-7 mb-5" />
 

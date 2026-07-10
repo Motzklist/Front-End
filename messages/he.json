@@ -71,7 +71,21 @@
     "submit": "התחברות",
     "submitting": "מתחבר…",
     "failed": "ההתחברות נכשלה. נסו שוב.",
-    "trouble": "בעיה בהתחברות? התקשרו למוקד השירות העירוני <phone>04-878-0900</phone> או חייגו <quickDial>*5470</quickDial>."
+    "trouble": "בעיה בהתחברות? התקשרו למוקד השירות העירוני <phone>04-878-0900</phone> או חייגו <quickDial>*5470</quickDial>.",
+    "continueWith": "המשך עם {provider}",
+    "redirectIntro": "תועברו באופן מאובטח אל {provider} להתחברות.",
+    "redirecting": "מעביר…"
+  },
+  "Auth": {
+    "signingIn": "מתחברים…",
+    "failedTitle": "ההתחברות נכשלה",
+    "failedMessage": "לא הצלחנו להשלים את ההתחברות. נסו שוב.",
+    "backToLogin": "חזרה להתחברות",
+    "mockBanner": "ספק זהות מדומה — לפיתוח בלבד",
+    "mockTitle": "התחברות עם {provider}",
+    "mockIntro": "זהו מסך הסכמה מדומה של צד שלישי. בסביבת הייצור זהו דף ההתחברות האמיתי של הספק.",
+    "mockApprove": "אישור והמשך",
+    "mockCancel": "ביטול"
   },
   "EquipmentList": {
     "eyebrow": "רשימת ציוד",
